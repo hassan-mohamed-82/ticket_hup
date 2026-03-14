@@ -1,0 +1,159 @@
+import { Request, Response } from "express";
+import { SQL, and, desc, eq } from "drizzle-orm";
+import { db } from "../../models/connection";
+import { BadRequest } from "../../Errors/BadRequest";
+import { NotFound } from "../../Errors/NotFound";
+import { cities, zones } from "../../models/schema";
+import { SuccessResponse } from "../../utils/response";
+
+// ✅ Create Zone
+export const createZone = async (req: Request, res: Response) => {
+  const { name, cityId } = req.body;
+
+  if (!name) throw new BadRequest("name is required");
+  if (!cityId) throw new BadRequest("cityId is required");
+
+  const city = await db
+    .select()
+    .from(cities)
+    .where(eq(cities.id, cityId))
+    .limit(1);
+
+  if (city.length === 0) {
+    throw new NotFound("City not found");
+  }
+
+  await db.insert(zones).values({ name, cityId });
+
+  return SuccessResponse(res, { message: "Zone created successfully" }, 201);
+};
+
+// ✅ Get All Zones
+export const getZones = async (req: Request, res: Response) => {
+  const { cityId } = req.query;
+
+  const conditions: SQL[] = [];
+  if (cityId && typeof cityId === "string") {
+    conditions.push(eq(zones.cityId, cityId));
+  }
+
+  const zoneList = await db
+    .select({
+      id: zones.id,
+      name: zones.name,
+      createdAt: zones.createdAt,
+      city: {
+        id: cities.id,
+        name: cities.name,
+      },
+    })
+    .from(zones)
+    .leftJoin(cities, eq(zones.cityId, cities.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(zones.createdAt));
+
+  return SuccessResponse(res, { zones: zoneList }, 200);
+};
+
+// ✅ Get Zone By ID
+export const getZoneById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const zone = await db
+    .select({
+      id: zones.id,
+      name: zones.name,
+      createdAt: zones.createdAt,
+      city: {
+        id: cities.id,
+        name: cities.name,
+      },
+    })
+    .from(zones)
+    .leftJoin(cities, eq(zones.cityId, cities.id))
+    .where(eq(zones.id, id))
+    .limit(1);
+
+  if (zone.length === 0) {
+    throw new NotFound("Zone not found");
+  }
+
+  return SuccessResponse(res, { zone: zone[0] }, 200);
+};
+
+// ✅ Update Zone
+export const updateZone = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, cityId } = req.body;
+
+  const zone = await db
+    .select()
+    .from(zones)
+    .where(eq(zones.id, id))
+    .limit(1);
+
+  if (zone.length === 0) {
+    throw new NotFound("Zone not found");
+  }
+
+  if (cityId) {
+    const city = await db
+      .select()
+      .from(cities)
+      .where(eq(cities.id, cityId))
+      .limit(1);
+
+    if (city.length === 0) {
+      throw new NotFound("City not found");
+    }
+  }
+
+  await db
+    .update(zones)
+    .set({
+      name: name || zone[0].name,
+      cityId: cityId || zone[0].cityId,
+    })
+    .where(eq(zones.id, id));
+
+  return SuccessResponse(res, { message: "Zone updated successfully" }, 200);
+};
+
+// ✅ Delete Zone
+export const deleteZone = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const zone = await db
+    .select()
+    .from(zones)
+    .where(eq(zones.id, id))
+    .limit(1);
+
+  if (zone.length === 0) {
+    throw new NotFound("Zone not found");
+  }
+
+  await db.delete(zones).where(eq(zones.id, id));
+
+  return SuccessResponse(res, { message: "Zone deleted successfully" }, 200);
+};
+
+// ✅ Get Zones Selection
+export const getZonesSelection = async (req: Request, res: Response) => {
+  const { cityId } = req.query;
+
+  const conditions: SQL[] = [];
+  if (cityId && typeof cityId === "string") {
+    conditions.push(eq(zones.cityId, cityId));
+  }
+
+  const zoneList = await db
+    .select({
+      id: zones.id,
+      name: zones.name,
+    })
+    .from(zones)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(zones.name);
+
+  return SuccessResponse(res, { zones: zoneList }, 200);
+};
