@@ -13,5 +13,6 @@ import { sql } from "drizzle-orm";
 export const countries = mysqlTable("countries", {
   id: char("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   name: varchar("name", { length: 100 }).notNull(),
+  status: mysqlEnum("status", ["active", "inactive"]).default("active"),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -15,5 +15,6 @@ export const cities = mysqlTable("cities", {
   name: varchar("name", { length: 100 }).notNull(),
   countryId: char("country_id", { length: 36 }).notNull().references(() => countries.id),
   createdAt: timestamp("created_at").defaultNow(),
+  status: mysqlEnum("status", ["active", "inactive"]).default("active"),
 });
 

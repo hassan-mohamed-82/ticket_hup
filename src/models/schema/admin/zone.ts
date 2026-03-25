@@ -15,5 +15,6 @@ export const zones = mysqlTable("zones", {
   id: char("id", { length: 36 }).primaryKey().default(sql`(UUID())`),
   name: varchar("name", { length: 100 }).notNull(),
   cityId: char("city_id", { length: 36 }).notNull().references(() => cities.id),
+  status: mysqlEnum("status", ["active", "inactive"]).default("active"),
   createdAt: timestamp("created_at").defaultNow(),
 });
