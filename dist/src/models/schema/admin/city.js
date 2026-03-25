@@ -9,4 +9,5 @@ exports.cities = (0, mysql_core_1.mysqlTable)("cities", {
     name: (0, mysql_core_1.varchar)("name", { length: 100 }).notNull(),
     countryId: (0, mysql_core_1.char)("country_id", { length: 36 }).notNull().references(() => country_1.countries.id),
     createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
+    status: (0, mysql_core_1.mysqlEnum)("status", ["active", "inactive"]).default("active"),
 });

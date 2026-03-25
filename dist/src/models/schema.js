@@ -17,8 +17,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Admin schema
 __exportStar(require("./schema/admin/admin"), exports);
 __exportStar(require("./schema/admin/roles"), exports);
-__exportStar(require("./schema/admin/category"), exports);
 __exportStar(require("./schema/admin/city"), exports);
 __exportStar(require("./schema/admin/zone"), exports);
 __exportStar(require("./schema/admin/country"), exports);
 __exportStar(require("./schema/admin/Bustype"), exports);
+__exportStar(require("./schema/admin/station"), exports);
